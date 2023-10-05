@@ -22,6 +22,7 @@ contract DigitalWallet {
 
     function depositTokens(address _tokenAddress, uint256 _amount) external {
         require(_amount > 0, "Amount must be greater than 0");
+        
         IERC20 token = IERC20(_tokenAddress);
         require(token.transferFrom(msg.sender, address(this), _amount), "Transfer failed");
 
@@ -31,34 +32,40 @@ contract DigitalWallet {
     }
 
     function transferTokens(address _tokenAddress, address _recipient, uint256 _amount) external {
+        require(_tokenAddress != address(0), "Invalid address");
         require(_recipient != address(0), "Invalid recipient address");
         require(_amount > 0, "Amount must be greater than 0");
         require(tokenBalances[_tokenAddress] >= _amount, "Insufficient balance");
 
         IERC20 token = IERC20(_tokenAddress);
         tokenBalances[_tokenAddress] -= _amount;
+
         require(token.transfer(_recipient, _amount), "Transfer failed");
 
         emit TokensTransferred(_tokenAddress, _recipient, _amount);
     }
 
     function getTokenBalance(address _tokenAddress) external view returns (uint256) {
+        require(_tokenAddress != address(0), "Invalid address");
+
         return tokenBalances[_tokenAddress];
     }
 
     function withdrawTokens(address _tokenAddress, uint256 _amount) external onlyOwner {
+        require(_tokenAddress != address(0), "Invalid address");
         require(tokenBalances[_tokenAddress] >= _amount, "Insufficient balance");
+
         IERC20 token = IERC20(_tokenAddress);
         tokenBalances[_tokenAddress] -= _amount;
+
         require(token.transfer(owner, _amount), "Transfer failed");
     }
     
     function getBalance(address user_account) external returns (uint){
-    
-       string memory data = "User Balance is : ";
-       uint user_bal = user_account.balance;
-       emit CheckBalance(data, user_bal );
-       return (user_bal);
+        require(user_account != address(0), "Invalid address");
 
+        uint user_bal = user_account.balance;
+        emit CheckBalance(user_bal);
+        return (user_bal);
     }
 }
